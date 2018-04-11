@@ -1,3 +1,4 @@
+use chrono::NaiveDate;
 use failure::{Error, ResultExt};
 
 use std::{
@@ -66,11 +67,22 @@ impl<'a> Product<'a> {
         self.id
     }
 
+    /// Reads the current price data from file. If there is no price data,
+    /// an empty data set will be created.
     pub fn read_prices(&self) -> Result<Prices, Error> {
-        let f = File::open(self.path.join(PRICE_FILE_NAME))?;
-        Ok(::serde_json::from_reader(&f).context("couldn't read price file")?)
+        let path = self.path.join(PRICE_FILE_NAME);
+        if !path.exists() {
+            self.write_prices(&Prices::empty())?;
+        }
+
+        let f = File::open(path)?;
+        Ok(
+            ::serde_json::from_reader(&f)
+                .context("couldn't read price file")?
+        )
     }
 
+    /// Writes the given price data to file, overwriting all prior data.
     pub fn write_prices(&self, prices: &Prices) -> Result<(), Error> {
         let mut f = File::create(self.path.join(PRICE_FILE_NAME))?;
         ::serde_json::to_writer_pretty(&mut f, prices)?;
@@ -83,11 +95,11 @@ impl<'a> Product<'a> {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Prices {
    #[serde(flatten)]
-   pub prices: HashMap<String, Euro>,
+   pub prices: HashMap<NaiveDate, Euro>,
 }
 
 impl Prices {
-    pub fn new() -> Self {
+    pub fn empty() -> Self {
         Self {
             prices: HashMap::new(),
         }

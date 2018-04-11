@@ -1,3 +1,4 @@
+extern crate chrono;
 extern crate env_logger;
 #[macro_use]
 extern crate failure;
@@ -37,7 +38,7 @@ fn run() -> Result<(), Error> {
     let product = db.get_or_create_product(123)?;
 
     let mut prices = product.read_prices()?;
-    prices.prices.insert("peter".into(), util::Euro::from_cents(710));
+    prices.prices.insert(chrono::offset::Local::today().naive_local(), util::Euro::from_cents(710));
     product.write_prices(&prices)?;
 
 
