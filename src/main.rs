@@ -4,6 +4,10 @@ extern crate failure;
 #[macro_use]
 extern crate log;
 extern crate scraper;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde;
+extern crate serde_json;
 
 use failure::Error;
 
@@ -20,9 +24,8 @@ fn main() {
             error!("... caused by: {}", cause);
         }
 
-        if let Some(bt) = e.cause().backtrace() {
-            error!("Backtrace: {}", bt);
-        }
+        info!("If you set RUST_BACKTRACE=1 a backtrace is printed to stderr");
+        eprintln!("{}", e.backtrace());
     }
 }
 
