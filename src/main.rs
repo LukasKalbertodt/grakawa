@@ -12,6 +12,7 @@ extern crate serde_json;
 use failure::Error;
 
 mod db;
+mod util;
 
 
 fn main() {
@@ -31,7 +32,14 @@ fn main() {
 
 
 fn run() -> Result<(), Error> {
-    db::Db::new("db")?;
+    let mut db = db::Db::new("db")?;
+
+    let product = db.get_or_create_product(123)?;
+
+    let mut prices = product.read_prices()?;
+    prices.prices.insert("peter".into(), util::Euro::from_cents(710));
+    product.write_prices(&prices)?;
+
 
     Ok(())
 }
