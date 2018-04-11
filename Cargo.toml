@@ -1,0 +1,10 @@
+[package]
+name = "grakawa"
+version = "0.1.0"
+authors = ["Lukas Kalbertodt <lukas.kalbertodt@gmail.com>"]
+
+[dependencies]
+env_logger = "0.5"
+failure = "0.1"
+log = "0.4"
+scraper = "0.6"
