@@ -7,7 +7,10 @@ authors = ["Lukas Kalbertodt <lukas.kalbertodt@gmail.com>"]
 chrono = { version = "0.4", features = ["serde"] }
 env_logger = "0.5"
 failure = "0.1"
+lazy_static = "1.0"
 log = "0.4"
+regex = "0.2"
+reqwest = "0.8"
 scraper = "0.6"
 serde = "1.0"
 serde_derive = "1.0"

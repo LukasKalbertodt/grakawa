@@ -3,7 +3,11 @@ extern crate env_logger;
 #[macro_use]
 extern crate failure;
 #[macro_use]
+extern crate lazy_static;
+#[macro_use]
 extern crate log;
+extern crate regex;
+extern crate reqwest;
 extern crate scraper;
 #[macro_use]
 extern crate serde_derive;
@@ -12,6 +16,7 @@ extern crate serde_json;
 
 use failure::Error;
 
+mod crawl;
 mod db;
 mod util;
 
@@ -41,6 +46,9 @@ fn run() -> Result<(), Error> {
     prices.prices.insert(chrono::offset::Local::today().naive_local(), util::Euro::from_cents(710));
     product.write_prices(&prices)?;
 
+
+    // crawl::load_price_history(1503079)?;
+    crawl::load_price_history(1758349)?;
 
     Ok(())
 }
