@@ -96,4 +96,8 @@ impl Db {
             None => Ok(self.add_product(id)?.unwrap()),
         }
     }
+
+    pub fn product_ids<'a>(&'a self) -> impl Iterator<Item = u32> + 'a {
+        self.index.product_ids().iter().cloned()
+    }
 }

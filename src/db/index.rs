@@ -69,6 +69,10 @@ impl Index {
         self.file.seek(SeekFrom::Start(0))?;
         Ok(::serde_json::to_writer_pretty(&mut self.file, &self.data)?)
     }
+
+    pub fn product_ids(&self) -> &[u32] {
+        &self.data.product_ids
+    }
 }
 
 #[derive(Serialize, Deserialize)]

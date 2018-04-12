@@ -67,11 +67,14 @@ fn run() -> Result<(), Error> {
 
         // Update all products in the database
         Command::Update { all: true, id: None } => {
-            eprintln!("Not implemented yet...");
+            for product_id in db.product_ids() {
+                let p = db.get_product(product_id)?.unwrap();
+                let prices = crawl::load_price_history(product_id)?;
+                p.write_prices(&prices)?;
+            }
         }
         // Update a specific product in the database
         Command::Update { all: false, id: Some(id) } => {
-
             match db.get_product(id)? {
                 Some(p) => {
                     let prices = crawl::load_price_history(id)?;
