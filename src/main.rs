@@ -60,7 +60,7 @@ fn run() -> Result<(), Error> {
             }
         }
         // Add all products from the result of a search to the database
-        Command::Add { id: None, from_search: Some(search_url) } => {
+        Command::Add { id: None, from_search: Some(_search_url) } => {
             eprintln!("Not implemented yet...");
         }
         Command::Add { .. } => unreachable!(),

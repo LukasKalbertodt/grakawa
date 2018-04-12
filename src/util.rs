@@ -10,6 +10,7 @@ use std::{
 pub struct Euro(u64);
 
 impl Euro {
+    #[allow(unused)]
     pub fn from_cents(cents: u64) -> Self {
         Euro(cents)
     }

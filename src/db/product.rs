@@ -63,12 +63,14 @@ impl<'a> Product<'a> {
         }
     }
 
+    #[allow(unused)]
     pub fn id(&self) -> u32 {
         self.id
     }
 
     /// Reads the current price data from file. If there is no price data,
     /// an empty data set will be created.
+    #[allow(unused)]
     pub fn read_prices(&self) -> Result<Prices, Error> {
         let path = self.path.join(PRICE_FILE_NAME);
         if !path.exists() {
@@ -99,6 +101,7 @@ pub struct Prices {
 }
 
 impl Prices {
+    #[allow(unused)]
     pub fn empty() -> Self {
         Self {
             prices: BTreeMap::new(),

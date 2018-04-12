@@ -1,7 +1,7 @@
 use failure::{Error, ResultExt};
 
 use std::{
-    fs::{self, File, OpenOptions},
+    fs,
     io,
     path::{Path, PathBuf},
 };
@@ -90,6 +90,7 @@ impl Db {
         Product::open(id, &self.db_path)
     }
 
+    #[allow(unused)]
     pub fn get_or_add_product(&mut self, id: u32) -> Result<Product, Error> {
         match Product::open(id, &self.db_path)? {
             Some(p) => Ok(p),
