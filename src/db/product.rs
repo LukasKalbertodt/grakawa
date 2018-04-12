@@ -2,7 +2,7 @@ use chrono::NaiveDate;
 use failure::{Error, ResultExt};
 
 use std::{
-    collections::HashMap,
+    collections::BTreeMap,
     fs::{self, File, OpenOptions},
     io,
     marker::PhantomData,
@@ -95,13 +95,13 @@ impl<'a> Product<'a> {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Prices {
    #[serde(flatten)]
-   pub prices: HashMap<NaiveDate, Euro>,
+   pub prices: BTreeMap<NaiveDate, Euro>,
 }
 
 impl Prices {
     pub fn empty() -> Self {
         Self {
-            prices: HashMap::new(),
+            prices: BTreeMap::new(),
         }
     }
 }

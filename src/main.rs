@@ -48,7 +48,8 @@ fn run() -> Result<(), Error> {
 
 
     // crawl::load_price_history(1503079)?;
-    crawl::load_price_history(1758349)?;
+    let prices = crawl::load_price_history(1758349)?;
+    println!("{:#?}", prices);
 
     Ok(())
 }
