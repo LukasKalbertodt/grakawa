@@ -77,7 +77,7 @@ impl Db {
         })
     }
 
-    pub fn create_product(&mut self, id: u32) -> Result<Option<Product>, Error> {
+    pub fn add_product(&mut self, id: u32) -> Result<Option<Product>, Error> {
         if self.index.add_product_id(id)? {
             let p = Product::create(id, &self.db_path)?;
             Ok(Some(p))
@@ -90,10 +90,10 @@ impl Db {
         Product::open(id, &self.db_path)
     }
 
-    pub fn get_or_create_product(&mut self, id: u32) -> Result<Product, Error> {
+    pub fn get_or_add_product(&mut self, id: u32) -> Result<Product, Error> {
         match Product::open(id, &self.db_path)? {
             Some(p) => Ok(p),
-            None => Ok(self.create_product(id)?.unwrap()),
+            None => Ok(self.add_product(id)?.unwrap()),
         }
     }
 }

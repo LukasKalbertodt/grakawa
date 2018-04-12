@@ -3,7 +3,7 @@ use failure::{Error, ResultExt};
 
 use std::{
     collections::BTreeMap,
-    fs::{self, File, OpenOptions},
+    fs::{self, File},
     io,
     marker::PhantomData,
     path::{Path, PathBuf},
