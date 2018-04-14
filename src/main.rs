@@ -15,6 +15,7 @@ extern crate serde;
 extern crate serde_json;
 #[macro_use]
 extern crate structopt;
+extern crate url;
 
 use failure::Error;
 use structopt::StructOpt;
@@ -60,8 +61,15 @@ fn run() -> Result<(), Error> {
             }
         }
         // Add all products from the result of a search to the database
-        Command::Add { id: None, from_search: Some(_search_url) } => {
-            eprintln!("Not implemented yet...");
+        Command::Add { id: None, from_search: Some(search_url) } => {
+            let path = crawl::remove_base(&search_url);
+            let ids = crawl::products_from_search(crawl::remove_base(path))?;
+
+            for &id in &ids {
+                db.add_product(id)?;
+            }
+
+            println!("{} products were added", ids.len());
         }
         Command::Add { .. } => unreachable!(),
 

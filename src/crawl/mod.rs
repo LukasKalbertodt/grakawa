@@ -1,7 +1,12 @@
 use chrono::NaiveDateTime;
 use failure::Error;
 use regex::Regex;
+use reqwest::{
+    header::Cookie,
+    Client,
+};
 use scraper::{Html, Selector};
+use url::Url;
 
 
 use db::product::Prices;
@@ -10,22 +15,28 @@ use util::Euro;
 
 
 const BASE_URL: &str = "https://geizhals.de/";
+const BASE_URL_UNSAFE: &str = "http://geizhals.de/";
 
 
-/// Loads a page from Geizhals and parses it as HTML document. The given `path`
-/// is prepended by `BASE_URL`.
-fn get<S: AsRef<str>>(path: S) -> Result<Html, Error> {
-    let url = format!("{}{}", BASE_URL, path.as_ref());
-    debug!("GETting: {}", url);
+/// Loads a page and parses it as HTML document.
+fn get<S: AsRef<str>>(url: S) -> Result<Html, Error> {
+    debug!("GETting: {}", url.as_ref());
 
-    let body = ::reqwest::get(&url)?.text()?;
+    let body = ::reqwest::get(url.as_ref())?.text()?;
     Ok(Html::parse_document(&body))
+}
+
+/// Removes the base url "https://geizhals.de" if present.
+pub fn remove_base(url: &str) -> &str {
+    url
+        .trim_left_matches(BASE_URL)
+        .trim_left_matches(BASE_URL_UNSAFE)
 }
 
 /// Loads the price history of the product with the given id.
 pub fn load_price_history(product_id: u32) -> Result<Prices, Error> {
-    let path = format!("?phist={}", product_id);
-    let html = get(path)?;
+    let url = format!("{}?phist={}", BASE_URL, product_id);
+    let html = get(url)?;
 
     // Find the `<script>` tag which contains the data we are after
     let selector = Selector::parse("script").unwrap();
@@ -67,4 +78,70 @@ pub fn load_price_history(product_id: u32) -> Result<Prices, Error> {
         .collect::<Result<_, Error>>()?;
 
     Ok(Prices { prices })
+}
+
+/// ...
+///
+/// The given query string has to be the query part of the URL. It needs to
+/// contain the `cat` parameter.
+pub fn products_from_search(query_string: &str) -> Result<Vec<u32>, Error> {
+    let raw_url = format!("{}{}", BASE_URL, query_string);
+
+    // 1000 is the maximum value the Geizhals server will accept
+    let cookies = {
+        let mut c = Cookie::new();
+        c.set("blaettern", "1000");
+        c
+    };
+
+    let client = Client::new();
+    let mut ids = vec![];
+
+    for page in 1.. {
+        // Set the `pg` query parameter to request the correct page. If the
+        // query parameter is already present, we need to remove it first
+        let mut url = Url::parse(&raw_url)?;
+        if url.query_pairs().find(|(k, _)| k == "pg").is_some() {
+            let pairs = url.query_pairs()
+                .filter(|&(ref k, _)| k != "pg")
+                .map(|(k, v)| (k.into_owned(), v.into_owned()))
+                .collect::<Vec<_>>();
+
+            url.query_pairs_mut()
+                .clear()
+                .extend_pairs(pairs)
+                .finish();
+
+        }
+
+        url.query_pairs_mut()
+            .append_pair("pg", &page.to_string())
+            .finish();
+
+
+        // Next, get the page from the interwebz
+        let body = client.get(url.as_str()).header(cookies.clone()).send()?.text()?;
+        let html = Html::parse_document(&body);
+
+        let product_item = Selector::parse(
+            "div.productlist__product > div.productlist__compare > input"
+        ).unwrap();
+
+
+        for elem in html.select(&product_item) {
+            let s = elem.value()
+                .attr("value")
+                .ok_or(format_err!("Unexpected HTML (missing value parameter)"))?;
+            let id = s.parse()?;
+            ids.push(id);
+        }
+
+        // TODO: find out the number of products and only break if we already
+        // got all
+        if true {
+            break;
+        }
+    }
+
+    Ok(ids)
 }
