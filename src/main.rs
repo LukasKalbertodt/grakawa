@@ -63,7 +63,7 @@ fn run() -> Result<(), Error> {
         // Add all products from the result of a search to the database
         Command::Add { id: None, from_search: Some(search_url) } => {
             let path = crawl::remove_base(&search_url);
-            let ids = crawl::products_from_search(crawl::remove_base(path))?;
+            let ids = crawl::products_from_search(&crawl::remove_base(&path))?;
 
             for &id in &ids {
                 db.add_product(id)?;

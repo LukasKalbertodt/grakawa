@@ -15,7 +15,6 @@ use util::Euro;
 
 
 const BASE_URL: &str = "https://geizhals.de/";
-const BASE_URL_UNSAFE: &str = "http://geizhals.de/";
 
 
 /// Loads a page and parses it as HTML document.
@@ -27,10 +26,13 @@ fn get<S: AsRef<str>>(url: S) -> Result<Html, Error> {
 }
 
 /// Removes the base url "https://geizhals.de" if present.
-pub fn remove_base(url: &str) -> &str {
-    url
-        .trim_left_matches(BASE_URL)
-        .trim_left_matches(BASE_URL_UNSAFE)
+pub fn remove_base(url: &str) -> String {
+    lazy_static! {
+        static ref POSSIBLE_PREFIXES: Regex
+            = Regex::new(r#"^https?://(www\.)?geizhals\.(de|at|eu)/"#).unwrap();
+    }
+
+    POSSIBLE_PREFIXES.replace(url, "").into_owned()
 }
 
 /// Loads the price history of the product with the given id.
