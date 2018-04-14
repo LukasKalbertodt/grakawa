@@ -53,8 +53,8 @@ fn run() -> Result<(), Error> {
     match args.command {
         // Add a specific ID to the database
         Command::Add { id: Some(id), from_search: None } => {
-            let p = db.add_product(id)?;
-            if p.is_some() {
+            let count = db.add_products(&[id])?;
+            if count == 1 {
                 println!("Product was added");
             } else {
                 println!("Product couldn't be added: ID '{}' already exists in DB", id);
@@ -65,9 +65,7 @@ fn run() -> Result<(), Error> {
             let path = crawl::remove_base(&search_url);
             let ids = crawl::products_from_search(&crawl::remove_base(&path))?;
 
-            for &id in &ids {
-                db.add_product(id)?;
-            }
+            db.add_products(&ids)?;
 
             println!("{} products were added", ids.len());
         }

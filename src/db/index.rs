@@ -50,15 +50,16 @@ impl Index {
     }
 
 
-    pub fn add_product_id(&mut self, id: u32) -> Result<bool, Error> {
-        match self.data.product_ids.binary_search(&id) {
-            Ok(_) => Ok(false),
-            Err(pos) => {
-                self.data.product_ids.insert(pos, id);
-                self.write()?;
-                Ok(true)
-            }
-        }
+    pub fn add_product_ids(&mut self, ids: &[u32]) -> Result<usize, Error> {
+        let new_ids = ids.iter().cloned()
+            .filter(|id| self.data.product_ids.binary_search(&id).is_err())
+            .collect::<Vec<_>>();
+
+        self.data.product_ids.extend_from_slice(&new_ids);
+        self.data.product_ids.sort();
+        self.write()?;
+
+        Ok(new_ids.len())
     }
 
     fn write(&mut self) -> Result<(), Error> {

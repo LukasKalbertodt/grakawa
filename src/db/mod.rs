@@ -77,26 +77,25 @@ impl Db {
         })
     }
 
-    pub fn add_product(&mut self, id: u32) -> Result<Option<Product>, Error> {
-        if self.index.add_product_id(id)? {
-            let p = Product::create(id, &self.db_path)?;
-            Ok(Some(p))
-        } else {
-            Ok(None)
+    pub fn add_products(&mut self, ids: &[u32]) -> Result<usize, Error> {
+        let count = self.index.add_product_ids(ids)?;
+        for &id in ids {
+            Product::create(id, &self.db_path)?;
         }
+        Ok(count)
     }
 
     pub fn get_product(&self, id: u32) -> Result<Option<Product>, Error> {
         Product::open(id, &self.db_path)
     }
 
-    #[allow(unused)]
-    pub fn get_or_add_product(&mut self, id: u32) -> Result<Product, Error> {
-        match Product::open(id, &self.db_path)? {
-            Some(p) => Ok(p),
-            None => Ok(self.add_product(id)?.unwrap()),
-        }
-    }
+    // #[allow(unused)]
+    // pub fn get_or_add_product(&mut self, id: u32) -> Result<Product, Error> {
+    //     match Product::open(id, &self.db_path)? {
+    //         Some(p) => Ok(p),
+    //         None => Ok(self.add_product(id)?.unwrap()),
+    //     }
+    // }
 
     pub fn product_ids<'a>(&'a self) -> impl Iterator<Item = u32> + 'a {
         self.index.product_ids().iter().cloned()
