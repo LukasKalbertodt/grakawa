@@ -98,6 +98,7 @@ pub fn products_from_search(query_string: &str) -> Result<Vec<u32>, Error> {
 
     let client = Client::new();
     let mut ids = vec![];
+    let mut remaining = 0i32;
 
     for page in 1.. {
         // Set the `pg` query parameter to request the correct page. If the
@@ -122,9 +123,30 @@ pub fn products_from_search(query_string: &str) -> Result<Vec<u32>, Error> {
 
 
         // Next, get the page from the interwebz
+        debug!("GETting '{}'", url.as_str());
         let body = client.get(url.as_str()).header(cookies.clone()).send()?.text()?;
         let html = Html::parse_document(&body);
 
+        // If this is our first request, we need to find out the total number
+        // of products
+        if page == 1 {
+            let count_selector = Selector::parse("div.productlist__name > a").unwrap();
+            let node = html.select(&count_selector).next()
+                .ok_or(format_err!("Unexpected HTML (missing article count)"))?;
+
+            lazy_static! {
+                static ref NUMBER: Regex = Regex::new(r#"[0-9]+"#).unwrap();
+            }
+
+            let s = node.inner_html();
+            remaining = NUMBER.find(&s)
+                .ok_or(format_err!("Unexpected HTML (invalid article count)"))?
+                .as_str()
+                .parse::<i32>()?;
+        }
+
+
+        // Search for the products in the list
         let product_item = Selector::parse(
             "div.productlist__product > div.productlist__compare > input"
         ).unwrap();
@@ -138,10 +160,12 @@ pub fn products_from_search(query_string: &str) -> Result<Vec<u32>, Error> {
             ids.push(id);
         }
 
-        // TODO: find out the number of products and only break if we already
-        // got all
-        if true {
+        // If there are no more products to check
+        remaining -= 1000;
+        if remaining <= 0 {
             break;
+        } else {
+            debug!("{} products remaining in this search", remaining);
         }
     }
 
